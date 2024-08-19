@@ -36,6 +36,7 @@ int main(void)
   WaveData *pUserDataArr = malloc(3 * sizeof(WaveData));
   ma_device *pDevices = malloc(3 * sizeof(ma_device));
   bool devicesPlaying[3] = { false };
+  bool devicesToggled[3] = { false };
 
    for(int i = 0; i < 3; i++){
      pUserDataArr[i].sineWave = &pWaveforms[i]; //TODO: rename sineWave WaveData
@@ -80,7 +81,28 @@ int main(void)
 
   //Start main game loop
   while(!WindowShouldClose()){
-    BeginDrawing();
+    //Space bar keycode is 32
+
+    //If the space bar is down, all toggled devices should play
+    if(IsKeyDown(32)){
+      for(int iDevice = 0; iDevice < 3; iDevice++){
+        if(devicesToggled[iDevice] && !devicesPlaying[iDevice]){
+          ma_device_start(&pDevices[iDevice]);
+          devicesPlaying[iDevice] = true;
+        }
+      }
+    }
+
+    if(IsKeyUp(32)){
+      for(int iDevice = 0; iDevice < 3; iDevice++){
+        if(devicesToggled[iDevice] && devicesPlaying[iDevice]){
+          ma_device_stop(&pDevices[iDevice]);
+          devicesPlaying[iDevice] = false;
+        }
+      }
+    }
+
+      BeginDrawing();
       ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
     //Draws the sine waves :3
@@ -95,16 +117,16 @@ int main(void)
 
     //Draws the toggle buttons
       for(int iDevice = 0; iDevice < 3; iDevice++){
-        if(GuiButton((Rectangle){(1024.0f / 3) + marginX, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 50, 50}, "Toggle playback")){
-          if(devicesPlaying[iDevice]){
-            ma_device_stop(&pDevices[iDevice]);
-            devicesPlaying[iDevice] = false;
+        char isOn[5];
+
+        if(devicesToggled[iDevice]){
+          strcpy(isOn, "OFF");
         }else{
-          ma_device_start(&pDevices[iDevice]);
-          devicesPlaying[iDevice] = true;
-          hasBegun = true;
+          strcpy(isOn, "ON");
         }
-      }
+        if(GuiButton((Rectangle){(1024.0f / 3) + marginX, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 50, 50}, isOn)){
+          devicesToggled[iDevice] = !devicesToggled[iDevice];
+        }
     }
 
     //Draws wave buttons
