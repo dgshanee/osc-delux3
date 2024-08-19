@@ -83,21 +83,7 @@ int main(void)
     BeginDrawing();
       ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
-    //   //Draws waveforms
-    //   for(int i = 0; i < 1024; i++){
-    //     int x = (i/3) + 100;
-    //     int y = (screenHeight / 2.0f) + (userData.buffer[i]*100);
-
-    //     DrawPixel((i/3) + 100,(screenHeight / 2.0f) + (userData.buffer[i]*100), RED);
-
-    //     if(i > 0 && hasBegun){
-    //       DrawLine(prevX, prevY, x, y, RED);
-    //     }
-
-    //     prevX = x;
-    //     prevY = y;
-    //   }
-
+    //Draws the sine waves :3
       for(int iData = 0; iData < 3; iData++){
         for(int i = 0; i < 1024; i++){
           int x = (i/3) + marginX; //3 changes the width. After the + it changes the margin
@@ -107,6 +93,7 @@ int main(void)
         }
       }
 
+    //Draws the toggle buttons
       for(int iDevice = 0; iDevice < 3; iDevice++){
         if(GuiButton((Rectangle){(1024.0f / 3) + marginX, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 50, 50}, "Toggle playback")){
           if(devicesPlaying[iDevice]){
@@ -120,21 +107,7 @@ int main(void)
       }
     }
 
-    //   if(GuiButton((Rectangle){200, 200, 50, 50}, "Stop me")){
-    //     if(devicePlaying){
-    //       ma_device_stop(&device);
-    //       devicePlaying = false;        
-    //     }else{
-    //       ma_device_start(&device);
-    //       devicePlaying = true;        
-    //       hasBegun = true;
-    //     }
-    //   }
-
-    // if(GuiButton((Rectangle){350, 200, 150, 50}, "Change to SAW")){
-    //   makeWaveForm(&device, ma_waveform_type_sawtooth, &sineWave);
-    // }
-
+    //Draws wave buttons
     for(int iDevice = 0; iDevice < 3; iDevice++){
       if(GuiButton((Rectangle){(1024.0f / 3) + marginX + 50, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 50, 50}, "SAW")){
         makeWaveForm(&pDevices[iDevice],ma_waveform_type_sawtooth,&pWaveforms[iDevice]);
@@ -146,13 +119,6 @@ int main(void)
 
       GuiSlider((Rectangle){(1024.0f / 3) + marginX + 150, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 200, 10}, NULL, NULL, &pUserDataArr[iDevice].amplitude, 0.0f, 1.0f);
     }
-
-    // if(GuiButton((Rectangle){450, 200, 150, 50}, "Change to sin")){
-    //   makeWaveForm(&device, ma_waveform_type_sine, &sineWave);
-    // }
-    //   GuiSlider((Rectangle){200,400,200,10}, NULL, NULL, &userData.frequency, 220, 440);
-
-    //   GuiSlider((Rectangle){450, 400, 200, 10}, NULL, NULL, &userData.amplitude, 0.0f, 1.0f);
 
     EndDrawing();
   }
