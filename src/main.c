@@ -77,17 +77,21 @@ int main(void)
 
   //More GUI properties
   InitWindow(screenWidth,screenWidth,"osc-delux3");
-  SetTargetFPS(60);
-
+  SetTargetFPS(120);
+  char keyCodeStr[20];
   //Start main game loop
   while(!WindowShouldClose()){
+    int keyCode = GetKeyPressed();
+    if(keyCode != 0){
+      snprintf(keyCodeStr, sizeof(keyCodeStr), "key down: %d", keyCode);
+    }
     //Space bar keycode is 32
 
     //If the space bar is down, all toggled devices should play
     if(IsKeyDown(32)){
       for(int iDevice = 0; iDevice < 3; iDevice++){
         if(devicesToggled[iDevice] && !devicesPlaying[iDevice]){
-          ma_device_start(&pDevices[iDevice]);
+          ma_device_set_master_volume(&pDevices[iDevice], 1.0f);
           devicesPlaying[iDevice] = true;
         }
       }
@@ -95,23 +99,24 @@ int main(void)
 
     if(IsKeyUp(32)){
       for(int iDevice = 0; iDevice < 3; iDevice++){
-        if(devicesToggled[iDevice] && devicesPlaying[iDevice]){
-          ma_device_stop(&pDevices[iDevice]);
-          devicesPlaying[iDevice] = false;
-        }
+        ma_device_set_master_volume(&pDevices[iDevice],0.0f);
+        devicesPlaying[iDevice] = false;
       }
     }
 
       BeginDrawing();
       ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-
-    //Draws the sine waves :3
+      DrawText(keyCodeStr, 20, 20, 10, RED);
+       //Draws the sine waves :3
       for(int iData = 0; iData < 3; iData++){
-        for(int i = 0; i < 1024; i++){
-          int x = (i/3) + marginX; //3 changes the width. After the + it changes the margin
-          int y = (screenHeight / (float)marginY) + (pUserDataArr[iData].buffer[i]*100) + (iData * marginY * 2 + 25);
+        if(devicesToggled[iData]){
+        
+          for(int i = 0; i < 1024; i++){
+            int x = (i/3) + marginX; //3 changes the width. After the + it changes the margin
+            int y = (screenHeight / (float)marginY) + (pUserDataArr[iData].buffer[i]*100) + (iData * marginY * 2 + 25);
 
-          DrawPixel(x, y, RED);
+            DrawPixel(x, y, RED);
+          }
         }
       }
 
@@ -125,6 +130,11 @@ int main(void)
           strcpy(isOn, "ON");
         }
         if(GuiButton((Rectangle){(1024.0f / 3) + marginX, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 50, 50}, isOn)){
+          if(devicesToggled[iDevice]){
+            ma_device_stop(&pDevices[iDevice]);
+          }else{
+            ma_device_start(&pDevices[iDevice]);
+          }
           devicesToggled[iDevice] = !devicesToggled[iDevice];
         }
     }
