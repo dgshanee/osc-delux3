@@ -9,6 +9,14 @@
 #define RAYGUI_IMPLEMENTATION
 #import "../include/raygui.h"
 
+// #define GUI_CURVE_EDITOR_IMPLEMENTATION
+// #include "../include/gui_curve_editor.h"
+
+#ifndef GUI_CURVE_EDITOR_IMPLEMENTATION
+#define GUI_CURVE_EDITOR_IMPLEMENTATION
+#include "../include/gui_curve_editor.h"
+#endif
+
 #define DEVICE_FORMAT ma_format_f32
 #define DEVICE_CHANNELS 2
 #define DEVICE_SAMPLE_RATE 48000
@@ -54,10 +62,12 @@ int main(void)
   //TODO: update variable names to be more general
   userData.sineWave = &sineWave;
   userData.amplitude = 0.2f;
+  userData.frequency = 220;
 
   //Begin initializing device
   ma_device device;
   ma_device_config deviceConfig;
+
 
   //Initialize device
   deviceConfig = ma_device_config_init(ma_device_type_playback);
@@ -77,8 +87,16 @@ int main(void)
 
   //More GUI properties
   InitWindow(screenWidth,screenWidth,"osc-delux3");
-  SetTargetFPS(120);
+  SetTargetFPS(60);
   char keyCodeStr[20];
+
+  //Curves
+  GuiCurveEditorState curves[3] = { 0 };
+  LoadCurveDefaults(curves);
+
+  //GUI Curve editor: time
+  float time = 0.0f;
+  float animationTime = 1.0f;
   //Start main game loop
   while(!WindowShouldClose()){
     int keyCode = GetKeyPressed();
@@ -89,12 +107,16 @@ int main(void)
 
     //If the space bar is down, all toggled devices should play
     if(IsKeyDown(32)){
+      time += GetFrameTime();
+      if(time > animationTime) time = 0;
       for(int iDevice = 0; iDevice < 3; iDevice++){
         if(devicesToggled[iDevice] && !devicesPlaying[iDevice]){
           ma_device_set_master_volume(&pDevices[iDevice], 1.0f);
           devicesPlaying[iDevice] = true;
         }
       }
+    }else{
+      time = 0.0f;
     }
 
     if(IsKeyUp(32)){
@@ -105,6 +127,10 @@ int main(void)
     }
 
       BeginDrawing();
+      //DEBUGGING: tracking the time
+      char timeStr[100];
+      sprintf(timeStr, "Value: %f", GuiCurveEval(&curves[0], time/animationTime));
+      DrawText(timeStr, GetMouseX() + 20, GetMouseY() + 20, 10, GREEN);
       ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
       DrawText(keyCodeStr, 20, 20, 10, RED);
        //Draws the sine waves :3
@@ -140,6 +166,8 @@ int main(void)
     }
 
     //Draws wave buttons
+
+    float currSliderOne; // debugging purposes
     for(int iDevice = 0; iDevice < 3; iDevice++){
       if(GuiButton((Rectangle){(1024.0f / 3) + marginX + 50, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 50, 50}, "SAW")){
         makeWaveForm(&pDevices[iDevice],ma_waveform_type_sawtooth,&pWaveforms[iDevice]);
@@ -149,8 +177,25 @@ int main(void)
               makeWaveForm(&pDevices[iDevice],ma_waveform_type_sine,&pWaveforms[iDevice]);
       }
 
+      //Amplitude modifier
       GuiSlider((Rectangle){(1024.0f / 3) + marginX + 150, (screenHeight / (float)marginY) + (iDevice * marginY * 2 + 25), 200, 10}, NULL, NULL, &pUserDataArr[iDevice].amplitude, 0.0f, 1.0f);
+      //Frequency modifier
+      GuiSlider((Rectangle){(1024.0f / 3) + marginX + 150, (screenHeight/(float)(marginY) + iDevice * marginY * 2 + 35), 200, 10}, NULL, NULL, &currSliderOne, 220, 440);
     }
+
+    pUserDataArr[0].frequency = currSliderOne + GuiCurveEval(&curves[0],time/animationTime);
+
+    
+
+    //CURVES: start drawing the curve editor
+    BeginScissorMode(0, 600, screenWidth, 100);
+      GuiCurveEditor(&curves[0], (Rectangle){0, 600, 100, 75});
+    EndScissorMode();
+
+    //Drawing mouse coords for debugging
+    char coordStr[100];
+    sprintf(coordStr, "%i, %i", GetMouseX(), GetMouseY());
+    DrawText(coordStr, GetMouseX() + 10, GetMouseY() + 10, 10, BLACK);
 
     EndDrawing();
   }
