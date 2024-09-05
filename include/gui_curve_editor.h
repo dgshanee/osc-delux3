@@ -93,7 +93,7 @@ extern "C" {            // Prevents name mangling of functions
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
 GuiCurveEditorState InitGuiCurveEditor();     // Initialize curve editor state
-void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds);  // Draw and update curve control
+void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds);  // Dra and update curve control
 
 // 1D Interpolation
 // Returns the y value (in [start, end]) of the curve at x = t

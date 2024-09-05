@@ -17,6 +17,12 @@
 #include "../include/gui_curve_editor.h"
 #endif
 
+#ifndef ENVELOPE_GRAPH_EDITOR_IMPLEMENTATION
+#define ENVELOPE_GRAPH_EDITOR_IMPLEMENTATION
+#include "../include/envelope_graph_editor.c"
+#endif
+
+
 #define DEVICE_FORMAT ma_format_f32
 #define DEVICE_CHANNELS 2
 #define DEVICE_SAMPLE_RATE 48000
@@ -24,6 +30,8 @@
 int main(void)
 {
   //GUI properties
+  SayHelloEditor();
+
   const int screenHeight = 540;
   const int screenWidth = 800;
   bool devicePlaying = false;
@@ -182,8 +190,8 @@ int main(void)
       //Frequency modifier
       GuiSlider((Rectangle){(1024.0f / 3) + marginX + 150, (screenHeight/(float)(marginY) + iDevice * marginY * 2 + 35), 200, 10}, NULL, NULL, &currSliderOne, 220, 440);
     }
-
     pUserDataArr[0].frequency = currSliderOne + GuiCurveEval(&curves[0],time/animationTime);
+
 
     
 
@@ -194,8 +202,13 @@ int main(void)
 
     //Drawing mouse coords for debugging
     char coordStr[100];
+    char freqStr[100];
     sprintf(coordStr, "%i, %i", GetMouseX(), GetMouseY());
+    sprintf(freqStr, "freq: %f", pUserDataArr[0].frequency);
     DrawText(coordStr, GetMouseX() + 10, GetMouseY() + 10, 10, BLACK);
+    DrawText(freqStr, GetMouseX() + 30, GetMouseY() + 30, 10, RED);
+
+    EnvelopeGraphEditor((Rectangle){400,600,250,100});
 
     EndDrawing();
   }
