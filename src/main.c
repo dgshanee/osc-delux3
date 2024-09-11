@@ -102,6 +102,9 @@ int main(void)
   GuiCurveEditorState curves[3] = { 0 };
   LoadCurveDefaults(curves);
 
+  EnvEditorState curve = InitEnvelopeEditor();
+  SetEnvelopePoints(&curve);
+
   //GUI Curve editor: time
   float time = 0.0f;
   float animationTime = 1.0f;
@@ -208,7 +211,7 @@ int main(void)
     DrawText(coordStr, GetMouseX() + 10, GetMouseY() + 10, 10, BLACK);
     DrawText(freqStr, GetMouseX() + 30, GetMouseY() + 30, 10, RED);
 
-    EnvelopeGraphEditor((Rectangle){400,600,250,100});
+    EnvelopeGraphEditor((Rectangle){400,600,250,100}, &curve);
 
     EndDrawing();
   }
