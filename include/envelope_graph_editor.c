@@ -98,7 +98,7 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     DrawRectangle(pointRect.x, pointRect.y, pointRect.width, pointRect.height, state->selectedIndex == i ? PURPLE : BLACK);
   }
 
-  sprintf(idxText, "Selected: %i", state->selectedIndex);
+  // sprintf(idxText, "Selected: %i", state->selectedIndex);
 
   DrawText(idxText, bounds.x - 100, bounds.y - 100, 20, BLACK);
   //Draw curves
@@ -126,12 +126,25 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
   if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && (state->selectedIndex != -1)){
     if(state->selectedIndex != 0){
       EnvEditorPoint *p = &state->points[state->selectedIndex];
+      EnvEditorPoint *p0 = &state->points[state->selectedIndex - 1];
+      if(state->selectedIndex != state->numPoints - 1){
+        EnvEditorPoint *p2 = &state->points[state->selectedIndex + 1];
+      }else{
+        EnvEditorPoint *p2 = NULL;
+      }
+
+      float originalPointX = p->position.x;
+      float originalPointY = p->position.y;
       // if(state->selectedIndex != state->numPoints - 1 || state->selectedIndex != 0){
       //   if(p->position.x < sortedPoints[state->selectedIndex - 1]->position.x) p->position.x += 0.05;
       //   if(p->position.x > sortedPoints[state->selectedIndex + 1]->position.x) p->position.x -= 0.05;
       // }
       const Vector2 newLocalPos = (Vector2){ mouseLocal.x + state->mouseOffset.x, mouseLocal.y + state->mouseOffset.y };
 
+      const Vector2 offSetPos = (Vector2){ newLocalPos.x - originalPointX, newLocalPos.y - originalPointY };
+
+
+      p->tangents.x += offSetPos.x;
       p->position.x = (newLocalPos.x < 0) ? 0 : ((newLocalPos.x > 1) ? 1 : newLocalPos.x);
       if(state->selectedIndex == 2) p->position.y = (newLocalPos.y < 0) ? 0 : ((newLocalPos.y > 1) ? 1 : newLocalPos.y);
     }
