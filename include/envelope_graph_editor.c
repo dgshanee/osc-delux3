@@ -84,21 +84,21 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
   DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GRAY);
 
   //Draw points - also select them
-  int selectedIndex = -1;
+  state->selectedIndex = -1;
   char idxText[100];
   for(int i = 0; i < state->numPoints; i++){
     const EnvEditorPoint *p = sortedPoints[i];
 
     const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height};
     const Rectangle pointRect = (Rectangle){ screenPos.x - pointSize/2.0f, screenPos.y - pointSize/2.0f, pointSize, pointSize};
-
-    DrawRectangle(pointRect.x, pointRect.y, pointRect.width, pointRect.height, BLACK);
     if(CheckCollisionPointRec(mouse, pointRect)){
-      selectedIndex = i;
+      state->selectedIndex = i;
     }
+
+    DrawRectangle(pointRect.x, pointRect.y, pointRect.width, pointRect.height, state->selectedIndex == i ? PURPLE : BLACK);
   }
 
-  sprintf(idxText, "Selected: %i", selectedIndex);
+  sprintf(idxText, "Selected: %i", state->selectedIndex);
 
   DrawText(idxText, bounds.x - 100, bounds.y - 100, 20, BLACK);
   //Draw curves
@@ -120,6 +120,21 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     const Vector2 screenC2 = (Vector2){c2.x * innerBounds.width + innerBounds.x, c2.y * innerBounds.height + innerBounds.y};
 
     DrawSplineSegmentBezierCubic(screenPos1, screenC1, screenC2, screenPos2, 1, BLUE);
+  }
+
+  //Selecting a point
+  if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && (state->selectedIndex != -1)){
+    if(state->selectedIndex != 0){
+      EnvEditorPoint *p = &state->points[state->selectedIndex];
+      // if(state->selectedIndex != state->numPoints - 1 || state->selectedIndex != 0){
+      //   if(p->position.x < sortedPoints[state->selectedIndex - 1]->position.x) p->position.x += 0.05;
+      //   if(p->position.x > sortedPoints[state->selectedIndex + 1]->position.x) p->position.x -= 0.05;
+      // }
+      const Vector2 newLocalPos = (Vector2){ mouseLocal.x + state->mouseOffset.x, mouseLocal.y + state->mouseOffset.y };
+
+      p->position.x = (newLocalPos.x < 0) ? 0 : ((newLocalPos.x > 1) ? 1 : newLocalPos.x);
+      if(state->selectedIndex == 2) p->position.y = (newLocalPos.y < 0) ? 0 : ((newLocalPos.y > 1) ? 1 : newLocalPos.y);
+    }
   }
 }
 
