@@ -14,9 +14,7 @@ typedef struct{
   bool rightLinear;
   bool movable;
   //Current index of the curve state. 0 == C1, 1 == C2, &c.
-  int curve_state_index;
-
-  
+  int curve_state_index;  
 }EnvEditorPoint;
 
 typedef struct{
@@ -71,6 +69,7 @@ void SayHelloEditor(){
   printf("hello");
 }
 
+//For sorting the points
 static int CompareEnvEditorPointPtr(const void *a, const void *b){
   float fa = (*(EnvEditorPoint**)a)->position.x;
   float fb = (*(EnvEditorPoint**)b)->position.x;
@@ -78,6 +77,7 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
   return ((fa>fb) - (fa < fb));
 }
 
+//For double-clicking
 float currClicks = 0.0f;
 bool doubleClick = false;
 void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
@@ -92,8 +92,10 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
 
   //Check for double click
   currClicks = currClicks <= 0 ? 0 : currClicks - 0.05;
+  
   if(currClicks <= 1) doubleClick = false;
   else doubleClick = true;
+
   if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
     currClicks += 1.0f;
   }
@@ -114,6 +116,8 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
 
     const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height};
     const Rectangle pointRect = (Rectangle){ screenPos.x - pointSize/2.0f, screenPos.y - pointSize/2.0f, pointSize, pointSize};
+
+    //Selects the point the cursor is hovering over
     if(CheckCollisionPointRec(mouse, pointRect)){
       state->selectedIndex = i;
     }
@@ -121,9 +125,9 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     DrawRectangle(pointRect.x, pointRect.y, pointRect.width, pointRect.height, state->selectedIndex == i ? PURPLE : BLACK);
   }
 
-  sprintf(idxText, "Selected: %f", currClicks);
+  //debugging - do not delete
+  // sprintf(idxText, "Selected: %f", currClicks);
 
-  if(doubleClick) DrawText(idxText, bounds.x - 100, bounds.y - 100, 20, BLACK);
   //Draw curves
   for(int i = 0; i < state->numPoints - 1; i++){
     const EnvEditorPoint *p1 = sortedPoints[i];
@@ -139,10 +143,11 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     const Vector2 c1 = (Vector2){p1->position.x + offset1.x, p1->position.y + offset1.y};
     const Vector2 c2 = (Vector2){p2->position.x + offset2.x, p2->position.y + offset2.y};
 
+    //Basically the top and bottom parts of the bezier curve w/r/t the screen 
     const Vector2 screenC1 = (Vector2){c1.x * innerBounds.width + innerBounds.x, c1.y * innerBounds.height + innerBounds.y};
     const Vector2 screenC2 = (Vector2){c2.x * innerBounds.width + innerBounds.x, c2.y * innerBounds.height + innerBounds.y};
 
-
+    //Draws the lines according to the curve state i.e. what index curve_state_index is at
     if(curve_cycle[p1->curve_state_index] == C1) DrawSplineSegmentBezierQuadratic(screenPos1, screenC1, screenPos2, 1.0f, RED);
     else if(curve_cycle[p1->curve_state_index] == C2) DrawSplineSegmentBezierQuadratic(screenPos1, screenC2, screenPos2, 1.0f, RED);
     else DrawSplineSegmentLinear(screenPos1, screenPos2, 1.0f, RED);
@@ -159,18 +164,8 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
         EnvEditorPoint *p2 = NULL;
       }
 
-      float originalPointX = 0.15f;
-      float originalPointY = 1.0f;
-      // if(state->selectedIndex != state->numPoints - 1 || state->selectedIndex != 0){
-      //   if(p->position.x < sortedPoints[state->selectedIndex - 1]->position.x) p->position.x += 0.05;
-      //   if(p->position.x > sortedPoints[state->selectedIndex + 1]->position.x) p->position.x -= 0.05;
-      // }
       const Vector2 newLocalPos = (Vector2){ mouseLocal.x + state->mouseOffset.x, mouseLocal.y + state->mouseOffset.y };
 
-      const Vector2 offSetPos = (Vector2){ newLocalPos.x - originalPointX, newLocalPos.y - originalPointY };
-
-
-      // p->tangents.x += offSetPos.x;
       p->position.x = (newLocalPos.x < 0) ? 0 : ((newLocalPos.x > 1) ? 1 : newLocalPos.x);
       if(state->selectedIndex == 2) p->position.y = (newLocalPos.y < 0) ? 0 : ((newLocalPos.y > 1) ? 1 : newLocalPos.y);
     }
