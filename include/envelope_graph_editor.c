@@ -5,6 +5,7 @@
 #define ENV_EDITOR_MAX_POINTS 4
 #endif
 
+
 typedef struct{
   Vector2 position;
   Vector2 tangents;
@@ -12,6 +13,9 @@ typedef struct{
   bool leftLinear;
   bool rightLinear;
   bool movable;
+  //Current index of the curve state. 0 == C1, 1 == C2, &c.
+  int curve_state_index;
+
   
 }EnvEditorPoint;
 
@@ -33,6 +37,15 @@ typedef struct{
 
 #include "raygui.h"
 #include "stdlib.h"
+
+
+enum Curve_State{
+  C1,
+  C2,
+  LINEAR
+};
+const int CURVE_CYCLE_LENGTH = 3;
+const enum Curve_State curve_cycle[CURVE_CYCLE_LENGTH] = {C1, C2, LINEAR};
 
 EnvEditorState InitEnvelopeEditor(){
   EnvEditorState state = { 0 };
@@ -65,7 +78,8 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
   return ((fa>fb) - (fa < fb));
 }
 
-
+float currClicks = 0.0f;
+bool doubleClick = false;
 void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
   const float pointSize = 10.0f;
   const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
@@ -75,6 +89,15 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
   const Rectangle innerBounds = (Rectangle){ bounds.x + fontSize, bounds.y + fontSize, bounds.width - 2*fontSize, bounds.height - 2*fontSize};
   const Vector2 mouse = GetMousePosition();
   const Vector2 mouseLocal = (Vector2){ (mouse.x - innerBounds.x)/innerBounds.width, (innerBounds.y + innerBounds.height-mouse.y)/innerBounds.height};
+
+  //Check for double click
+  currClicks = currClicks <= 0 ? 0 : currClicks - 0.05;
+  if(currClicks <= 1) doubleClick = false;
+  else doubleClick = true;
+  if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+    currClicks += 1.0f;
+  }
+
 
   //Sort points
   EnvEditorPoint *sortedPoints[ENV_EDITOR_MAX_POINTS] = { 0 };
@@ -98,9 +121,9 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     DrawRectangle(pointRect.x, pointRect.y, pointRect.width, pointRect.height, state->selectedIndex == i ? PURPLE : BLACK);
   }
 
-  // sprintf(idxText, "Selected: %i", state->selectedIndex);
+  sprintf(idxText, "Selected: %f", currClicks);
 
-  DrawText(idxText, bounds.x - 100, bounds.y - 100, 20, BLACK);
+  if(doubleClick) DrawText(idxText, bounds.x - 100, bounds.y - 100, 20, BLACK);
   //Draw curves
   for(int i = 0; i < state->numPoints - 1; i++){
     const EnvEditorPoint *p1 = sortedPoints[i];
@@ -119,7 +142,10 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     const Vector2 screenC1 = (Vector2){c1.x * innerBounds.width + innerBounds.x, c1.y * innerBounds.height + innerBounds.y};
     const Vector2 screenC2 = (Vector2){c2.x * innerBounds.width + innerBounds.x, c2.y * innerBounds.height + innerBounds.y};
 
-    DrawSplineSegmentBezierCubic(screenPos1, screenC1, screenC2, screenPos2, 1, BLUE);
+
+    if(curve_cycle[p1->curve_state_index] == C1) DrawSplineSegmentBezierQuadratic(screenPos1, screenC1, screenPos2, 1.0f, RED);
+    else if(curve_cycle[p1->curve_state_index] == C2) DrawSplineSegmentBezierQuadratic(screenPos1, screenC2, screenPos2, 1.0f, RED);
+    else DrawSplineSegmentLinear(screenPos1, screenPos2, 1.0f, RED);
   }
 
   //Selecting a point
@@ -133,8 +159,8 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
         EnvEditorPoint *p2 = NULL;
       }
 
-      float originalPointX = p->position.x;
-      float originalPointY = p->position.y;
+      float originalPointX = 0.15f;
+      float originalPointY = 1.0f;
       // if(state->selectedIndex != state->numPoints - 1 || state->selectedIndex != 0){
       //   if(p->position.x < sortedPoints[state->selectedIndex - 1]->position.x) p->position.x += 0.05;
       //   if(p->position.x > sortedPoints[state->selectedIndex + 1]->position.x) p->position.x -= 0.05;
@@ -144,10 +170,18 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
       const Vector2 offSetPos = (Vector2){ newLocalPos.x - originalPointX, newLocalPos.y - originalPointY };
 
 
-      p->tangents.x += offSetPos.x;
+      // p->tangents.x += offSetPos.x;
       p->position.x = (newLocalPos.x < 0) ? 0 : ((newLocalPos.x > 1) ? 1 : newLocalPos.x);
       if(state->selectedIndex == 2) p->position.y = (newLocalPos.y < 0) ? 0 : ((newLocalPos.y > 1) ? 1 : newLocalPos.y);
     }
+  }
+  //If you double click on a point, its curve toggles from C1 to C2
+  if(doubleClick && state->selectedIndex != -1){
+    EnvEditorPoint *p = sortedPoints[state->selectedIndex];
+
+    p->curve_state_index = (p->curve_state_index + 1) % CURVE_CYCLE_LENGTH;
+    doubleClick = false;
+    currClicks = 0;
   }
 }
 
