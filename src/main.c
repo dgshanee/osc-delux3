@@ -107,7 +107,7 @@ int main(void)
 
   //GUI Curve editor: time
   float time = 0.0f;
-  float animationTime = 1.0f;
+  float animationTime = 10.0f;
   //Start main game loop
   while(!WindowShouldClose()){
     int keyCode = GetKeyPressed();
@@ -140,7 +140,7 @@ int main(void)
       BeginDrawing();
       //DEBUGGING: tracking the time
       char timeStr[100];
-      sprintf(timeStr, "Value: %f", GuiCurveEval(&curves[0], time/animationTime));
+      sprintf(timeStr, "Value: %f", EnvelopeCurveEval(&curve, time/animationTime));
       DrawText(timeStr, GetMouseX() + 20, GetMouseY() + 20, 10, GREEN);
       ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
       DrawText(keyCodeStr, 20, 20, 10, RED);
@@ -193,7 +193,7 @@ int main(void)
       //Frequency modifier
       GuiSlider((Rectangle){(1024.0f / 3) + marginX + 150, (screenHeight/(float)(marginY) + iDevice * marginY * 2 + 35), 200, 10}, NULL, NULL, &currSliderOne, 220, 440);
     }
-    pUserDataArr[0].frequency = currSliderOne + GuiCurveEval(&curves[0],time/animationTime);
+    pUserDataArr[0].frequency = currSliderOne + EnvelopeCurveEval(&curve,time/animationTime);
 
 
     

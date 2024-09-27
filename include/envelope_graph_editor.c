@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
 
 #ifndef ENV_EDITOR_MAX_POINTS
 #define ENV_EDITOR_MAX_POINTS 4
@@ -75,6 +76,53 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
   float fb = (*(EnvEditorPoint**)b)->position.x;
 
   return ((fa>fb) - (fa < fb));
+}
+
+float EnvelopeCurveEval(EnvEditorState *state, float t){
+  //TEMPORARY
+  const int scale = 100;
+  //Sort
+  EnvEditorPoint* sorted[ENV_EDITOR_MAX_POINTS];
+
+  for(int i = 0; i < state->numPoints; i++) sorted[i] = &state->points[i];
+
+  qsort(sorted, state->numPoints, sizeof(EnvEditorPoint*), CompareEnvEditorPointPtr);
+
+  //Edges
+  // if (t <= sorted[0]->position.x) return state->start + (state->end-state->start)*sorted[0]->position.y;
+  // if (t >= sorted[state->numPoints-1]->position.x) return state->start + (state->end-state->start)*sorted[state->numPoints-1]->position.y;  return state->start;
+
+  //Find portion
+  for(int i = 0; i < state->numPoints-1; i++){
+    const EnvEditorPoint *p1 = sorted[i];
+    const EnvEditorPoint *p2 = sorted[i+1];
+
+    //Skip    
+    if (!((t >= p1->position.x) && (t < p2->position.x)) || (p1->position.x == p2->position.x)) continue;
+
+    const float diff = (p2->position.x - p1->position.x)/3.0f;
+
+    if(curve_cycle[p1->curve_state_index] == C1){
+      //calculate C1
+      const Vector2 offset1 = (Vector2){scale, scale*p1->tangents.y};
+      const float c1y = p1->position.y + offset1.y;
+
+      return fabs((pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c1y+pow(t,2)*p2->position.y));
+    }
+    else if(curve_cycle[p1->curve_state_index] == C2){
+      //calculate C2
+      const Vector2 offset2 = (Vector2){scale, scale*p2->tangents.y};
+      const float c2y = p2->position.y + offset2.y;
+
+      return fabs(pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c2y+pow(t,2)*p2->position.y);
+    }
+    else{
+      //calculate linear
+      return (1 - t) * p1->position.y + (t * p2->position.y) * scale;
+    }
+  }
+
+  return state->start;
 }
 
 //For double-clicking
