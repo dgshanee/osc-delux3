@@ -79,6 +79,17 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
 }
 
 float EnvelopeCurveEval(EnvEditorState *state, float t){
+  //DEBUGGING:
+  float timePos = state->bounds.x + (state->bounds.width * t);
+  char timeStr[15];
+  char timePosStr[15];
+  snprintf(timeStr, sizeof(timeStr),"time:%f", t);
+  snprintf(timePosStr, sizeof(timePosStr), "timePos:%f", timePos);
+  DrawLine(timePos, state->bounds.y, timePos, state->bounds.y + state->bounds.height, BLUE);
+  DrawText(timeStr, 200, 200, 20, GREEN);
+  DrawText(timePosStr, 200, 300, 20, GREEN);
+  //Evaluating a curve should give you a number between 0 and 1. From there, the user can adjust the scale.
+  //So, calculate the y over the x to get the derivative.
   //TEMPORARY
   const int scale = 100;
   //Sort
@@ -107,7 +118,7 @@ float EnvelopeCurveEval(EnvEditorState *state, float t){
       const Vector2 offset1 = (Vector2){scale, scale*p1->tangents.y};
       const float c1y = p1->position.y + offset1.y;
 
-      return fabs((pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c1y+pow(t,2)*p2->position.y));
+      return (pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c1y+pow(t,2)*p2->position.y);
     }
     else if(curve_cycle[p1->curve_state_index] == C2){
       //calculate C2
@@ -148,13 +159,17 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     currClicks += 1.0f;
   }
 
+  state->bounds.x = bounds.x;
+  state->bounds.y = bounds.y;
+  state->bounds.width = bounds.width;
+  state->bounds.height = bounds.height;
 
   //Sort points
   EnvEditorPoint *sortedPoints[ENV_EDITOR_MAX_POINTS] = { 0 };
   for(int i = 0; i < state->numPoints; i++) sortedPoints[i] = &state->points[i];
   qsort(sortedPoints,state->numPoints, sizeof(EnvEditorPoint*), CompareEnvEditorPointPtr);
   //DRAWING
-  DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GRAY);
+  DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GRAY, 0.2f));
 
   //Draw points - also select them
   state->selectedIndex = -1;
