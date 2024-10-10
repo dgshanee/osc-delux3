@@ -91,7 +91,6 @@ float EnvelopeCurveEval(EnvEditorState *state, float t){
   //Evaluating a curve should give you a number between 0 and 1. From there, the user can adjust the scale.
   //So, calculate the y over the x to get the derivative.
   //TEMPORARY
-  const int scale = 100;
   //Sort
   EnvEditorPoint* sorted[ENV_EDITOR_MAX_POINTS];
 
@@ -104,28 +103,40 @@ float EnvelopeCurveEval(EnvEditorState *state, float t){
   // if (t >= sorted[state->numPoints-1]->position.x) return state->start + (state->end-state->start)*sorted[state->numPoints-1]->position.y;  return state->start;
 
   //Find portion
+  const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
+  const Rectangle innerBounds = (Rectangle){ state->bounds.x + fontSize, state->bounds.y + fontSize, state->bounds.width - 2*fontSize, state->bounds.height - 2*fontSize};
+
   for(int i = 0; i < state->numPoints-1; i++){
     const EnvEditorPoint *p1 = sorted[i];
     const EnvEditorPoint *p2 = sorted[i+1];
 
+
     //Skip    
     if (!((t >= p1->position.x) && (t < p2->position.x)) || (p1->position.x == p2->position.x)) continue;
 
-    const float diff = (p2->position.x - p1->position.x)/3.0f;
+    const float scale = (p2->position.x - p1->position.x)/3.0f;
 
+    const Vector2 screenPos1 = (Vector2){ p1->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y * innerBounds.height};
+    const Vector2 screenPos2 = (Vector2){ p2->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y * innerBounds.height};
+
+    const Vector2 offset1 = (Vector2){scale,scale*p1->tangents.y};
+    const Vector2 offset2 = (Vector2){-scale, -scale*p2->tangents.x};
     if(curve_cycle[p1->curve_state_index] == C1){
-      //calculate C1
-      const Vector2 offset1 = (Vector2){scale, scale*p1->tangents.y};
-      const float c1y = p1->position.y + offset1.y;
+      const Vector2 c1 = (Vector2){p1->position.x + offset1.x, p1->position.y + offset1.y};
+      const Vector2 screenC1 = (Vector2){c1.x * innerBounds.width + innerBounds.x, c1.y * innerBounds.height + innerBounds.y};
 
-      return (pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c1y+pow(t,2)*p2->position.y);
+      float resy =  (1-t) * (1-t) * screenPos2.y + 2 * (1-t) * t * screenC1.y + t * t * screenPos2.y;
+      float resx =  (1-t) * (1-t) * screenPos2.x + 2 * (1-t) * t * screenC1.x + t * t * screenPos2.x;
+      return (state->start + (state->end-state->start))*(resy);
     }
     else if(curve_cycle[p1->curve_state_index] == C2){
       //calculate C2
       const Vector2 offset2 = (Vector2){scale, scale*p2->tangents.y};
       const float c2y = p2->position.y + offset2.y;
 
-      return fabs(pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c2y+pow(t,2)*p2->position.y);
+      // return fabs(pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c2y+pow(t,2)*p2->position.y);
+
+      return (1-t) * (1-t) * p2->position.y + 2 * (1-t) * t * c2y + t * t * p2->position.y;
     }
     else{
       //calculate linear
