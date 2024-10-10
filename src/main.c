@@ -107,7 +107,7 @@ int main(void)
 
   //GUI Curve editor: time
   float time = 0.0f;
-  float animationTime = 10.0f;
+  float animationTime = 1.0f;
   //Start main game loop
   while(!WindowShouldClose()){
     int keyCode = GetKeyPressed();

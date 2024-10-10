@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #ifndef ENV_EDITOR_MAX_POINTS
@@ -78,6 +79,10 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
   return ((fa>fb) - (fa < fb));
 }
 
+
+int collision_cooldown = 20;
+int currIdx = 0;
+
 float EnvelopeCurveEval(EnvEditorState *state, float t){
   //DEBUGGING:
   float timePos = state->bounds.x + (state->bounds.width * t);
@@ -85,7 +90,6 @@ float EnvelopeCurveEval(EnvEditorState *state, float t){
   char timePosStr[15];
   snprintf(timeStr, sizeof(timeStr),"time:%f", t);
   snprintf(timePosStr, sizeof(timePosStr), "timePos:%f", timePos);
-  DrawLine(timePos, state->bounds.y, timePos, state->bounds.y + state->bounds.height, BLUE);
   DrawText(timeStr, 200, 200, 20, GREEN);
   DrawText(timePosStr, 200, 300, 20, GREEN);
   //Evaluating a curve should give you a number between 0 and 1. From there, the user can adjust the scale.
@@ -106,44 +110,43 @@ float EnvelopeCurveEval(EnvEditorState *state, float t){
   const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
   const Rectangle innerBounds = (Rectangle){ state->bounds.x + fontSize, state->bounds.y + fontSize, state->bounds.width - 2*fontSize, state->bounds.height - 2*fontSize};
 
-  for(int i = 0; i < state->numPoints-1; i++){
-    const EnvEditorPoint *p1 = sorted[i];
-    const EnvEditorPoint *p2 = sorted[i+1];
+  DrawLine(timePos + (innerBounds.x - state->bounds.x), state->bounds.y, timePos + (innerBounds.x - state->bounds.x), state->bounds.y + state->bounds.height, BLUE);
 
+  const EnvEditorPoint *p1 = sorted[currIdx];
+  const EnvEditorPoint *p2 = sorted[currIdx + 1];
+  
+  const Vector2 screenPos1 = (Vector2){ p1->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y * innerBounds.height};
+  const Vector2 screenPos2 = (Vector2){ p2->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y * innerBounds.height}; 
 
-    //Skip    
-    if (!((t >= p1->position.x) && (t < p2->position.x)) || (p1->position.x == p2->position.x)) continue;
+  float pixelX;
+  float pixelY;
 
-    const float scale = (p2->position.x - p1->position.x)/3.0f;
+  if(curve_cycle[p1->curve_state_index] == C1){
+    
+    const Vector2 screenC1 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmin(screenPos1.y, screenPos2.y)};
 
-    const Vector2 screenPos1 = (Vector2){ p1->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y * innerBounds.height};
-    const Vector2 screenPos2 = (Vector2){ p2->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y * innerBounds.height};
+    pixelX = (1-t)*(1-t)*screenPos1.x+2*(1-t)*t*screenC1.x+t*t*screenPos2.x;
+    pixelY = (1-t)*(1-t)*screenPos1.y+2*(1-t)*t*screenC1.y+t*t*screenPos2.y;
 
-    const Vector2 offset1 = (Vector2){scale,scale*p1->tangents.y};
-    const Vector2 offset2 = (Vector2){-scale, -scale*p2->tangents.x};
-    if(curve_cycle[p1->curve_state_index] == C1){
-      const Vector2 c1 = (Vector2){p1->position.x + offset1.x, p1->position.y + offset1.y};
-      const Vector2 screenC1 = (Vector2){c1.x * innerBounds.width + innerBounds.x, c1.y * innerBounds.height + innerBounds.y};
+  }
+  DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
 
-      float resy =  (1-t) * (1-t) * screenPos2.y + 2 * (1-t) * t * screenC1.y + t * t * screenPos2.y;
-      float resx =  (1-t) * (1-t) * screenPos2.x + 2 * (1-t) * t * screenC1.x + t * t * screenPos2.x;
-      return (state->start + (state->end-state->start))*(resy);
-    }
-    else if(curve_cycle[p1->curve_state_index] == C2){
-      //calculate C2
-      const Vector2 offset2 = (Vector2){scale, scale*p2->tangents.y};
-      const float c2y = p2->position.y + offset2.y;
-
-      // return fabs(pow(1-t, 2) * p1->position.y + 2*(1-t)*t*c2y+pow(t,2)*p2->position.y);
-
-      return (1-t) * (1-t) * p2->position.y + 2 * (1-t) * t * c2y + t * t * p2->position.y;
-    }
-    else{
-      //calculate linear
-      return (1 - t) * p1->position.y + (t * p2->position.y) * scale;
+  Vector2 line1 = (Vector2){ screenPos2.x, state->bounds.y};
+  Vector2 line2 = (Vector2){ screenPos2.x, state->bounds.y + state->bounds.height };
+  DrawLineV(line1, line2, PURPLE);
+  if(CheckCollisionCircleLine((Vector2){ pixelX, pixelY }, 1.0f, line1, line2) && collision_cooldown == 20){
+    currIdx++;
+    printf("%i\n", currIdx);
+    printf("%i", p1 == p2);
+    if(currIdx >= state->numPoints - 1) currIdx = 0;
+    collision_cooldown--;
+  }
+  if(collision_cooldown < 20){
+    collision_cooldown--;
+    if(collision_cooldown <= 0){
+      collision_cooldown = 20;
     }
   }
-
   return state->start;
 }
 
@@ -214,12 +217,14 @@ void EnvelopeGraphEditor(Rectangle bounds, EnvEditorState *state){
     const Vector2 offset1 = (Vector2){scale, scale*p1->tangents.y};
     const Vector2 offset2 = (Vector2){-scale, -scale*p2->tangents.x};
 
-    const Vector2 c1 = (Vector2){p1->position.x + offset1.x, p1->position.y + offset1.y};
-    const Vector2 c2 = (Vector2){p2->position.x + offset2.x, p2->position.y + offset2.y};
-
+    //c1 is above the curve
+    //c2 is below the curve
     //Basically the top and bottom parts of the bezier curve w/r/t the screen 
-    const Vector2 screenC1 = (Vector2){c1.x * innerBounds.width + innerBounds.x, c1.y * innerBounds.height + innerBounds.y};
-    const Vector2 screenC2 = (Vector2){c2.x * innerBounds.width + innerBounds.x, c2.y * innerBounds.height + innerBounds.y};
+    const Vector2 screenC1 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmin(screenPos1.y, screenPos2.y)};
+    const Vector2 screenC2 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmax(screenPos1.y, screenPos2.y)};
+
+    DrawCircle(screenC1.x, screenC1.y, 5.0f, RED);
+    DrawCircle(screenC2.x, screenC2.y, 5.0f, PURPLE);
 
     //Draws the lines according to the curve state i.e. what index curve_state_index is at
     if(curve_cycle[p1->curve_state_index] == C1) DrawSplineSegmentBezierQuadratic(screenPos1, screenC1, screenPos2, 1.0f, RED);
