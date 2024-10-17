@@ -83,12 +83,13 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
 int collision_cooldown = 20;
 int currIdx = 0;
 
-float EnvelopeCurveEval(EnvEditorState *state, float t){
+float EnvelopeCurveEval(EnvEditorState *state, float *time, float cycleTime){
+  float t = *time/cycleTime;
   //DEBUGGING:
   float timePos = state->bounds.x + (state->bounds.width * t);
   char timeStr[15];
   char timePosStr[15];
-  snprintf(timeStr, sizeof(timeStr),"time:%f", t);
+  snprintf(timeStr, sizeof(timeStr),"time:%f", *time);
   snprintf(timePosStr, sizeof(timePosStr), "timePos:%f", timePos);
   DrawText(timeStr, 200, 200, 20, GREEN);
   DrawText(timePosStr, 200, 300, 20, GREEN);
@@ -134,18 +135,11 @@ float EnvelopeCurveEval(EnvEditorState *state, float t){
   Vector2 line1 = (Vector2){ screenPos2.x, state->bounds.y};
   Vector2 line2 = (Vector2){ screenPos2.x, state->bounds.y + state->bounds.height };
   DrawLineV(line1, line2, PURPLE);
-  if(CheckCollisionCircleLine((Vector2){ pixelX, pixelY }, 1.0f, line1, line2) && collision_cooldown == 20){
+  //MANAGE TIME
+  if(*time > cycleTime){
     currIdx++;
-    printf("%i\n", currIdx);
-    printf("%i", p1 == p2);
     if(currIdx >= state->numPoints - 1) currIdx = 0;
-    collision_cooldown--;
-  }
-  if(collision_cooldown < 20){
-    collision_cooldown--;
-    if(collision_cooldown <= 0){
-      collision_cooldown = 20;
-    }
+    *time = 0;
   }
   return state->start;
 }

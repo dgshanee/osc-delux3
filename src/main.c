@@ -117,9 +117,9 @@ int main(void)
     //Space bar keycode is 32
 
     //If the space bar is down, all toggled devices should play
+    //Manages time. More time management is in EnvelopeCurveEval();
     if(IsKeyDown(32)){
       time += GetFrameTime();
-      if(time > animationTime) time = 0;
       for(int iDevice = 0; iDevice < 3; iDevice++){
         if(devicesToggled[iDevice] && !devicesPlaying[iDevice]){
           ma_device_set_master_volume(&pDevices[iDevice], 1.0f);
@@ -140,7 +140,7 @@ int main(void)
       BeginDrawing();
       //DEBUGGING: tracking the time
       char timeStr[100];
-      sprintf(timeStr, "Value: %f", EnvelopeCurveEval(&curve, time/animationTime));
+      sprintf(timeStr, "Value: %f", EnvelopeCurveEval(&curve, &time, animationTime));
       DrawText(timeStr, GetMouseX() + 20, GetMouseY() + 20, 10, GREEN);
       ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
       DrawText(keyCodeStr, 20, 20, 10, RED);
@@ -214,7 +214,7 @@ int main(void)
     Rectangle envelopeRect = (Rectangle){400,600,250,100};
     EnvelopeGraphEditor(envelopeRect, &curve);
 
-    float curveEval = EnvelopeCurveEval(&curve, time/animationTime);
+    float curveEval = EnvelopeCurveEval(&curve, &time, animationTime);
     pUserDataArr[0].frequency = currSliderOne + curveEval;
 
     //Draw fill up bar
