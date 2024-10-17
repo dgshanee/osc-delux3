@@ -114,6 +114,7 @@ float EnvelopeCurveEval(EnvEditorState *state, float *time, float animationTime)
   float pixelX;
   float pixelY;
 
+  //FEATURE: evaluate curve based on the bezier position
   if(curve_cycle[p1->curve_state_index] == C1){
     
     const Vector2 screenC1 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmin(screenPos1.y, screenPos2.y)};
@@ -121,7 +122,16 @@ float EnvelopeCurveEval(EnvEditorState *state, float *time, float animationTime)
     pixelX = (1-t)*(1-t)*screenPos1.x+2*(1-t)*t*screenC1.x+t*t*screenPos2.x;
     pixelY = (1-t)*(1-t)*screenPos1.y+2*(1-t)*t*screenC1.y+t*t*screenPos2.y;
 
-  }//todo: add c2 and linear
+  }
+  else if(curve_cycle[p1->curve_state_index] == C2){
+    const Vector2 screenC2 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmax(screenPos1.y, screenPos2.y)};
+
+    pixelX = (1-t)*(1-t)*screenPos1.x+2*(1-t)*t*screenC2.x+t*t*screenPos2.x;
+    pixelY = (1-t)*(1-t)*screenPos1.y+2*(1-t)*t*screenC2.y+t*t*screenPos2.y;
+  }else{
+    pixelX = (1-t)*screenPos1.x+(t * screenPos2.x);
+    pixelY = (1-t)*screenPos1.y+(t * screenPos2.y);
+  }
 
   //DEBUGGING: circle tracing the bezier curve
   DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
