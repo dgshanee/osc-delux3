@@ -194,14 +194,6 @@ int main(void)
       GuiSlider((Rectangle){(1024.0f / 3) + marginX + 150, (screenHeight/(float)(marginY) + iDevice * marginY * 2 + 35), 200, 10}, NULL, NULL, &currSliderOne, 220, 440);
     }
 
-
-    
-
-    //CURVES: start drawing the curve editor
-    BeginScissorMode(0, 600, screenWidth, 100);
-      GuiCurveEditor(&curves[0], (Rectangle){0, 600, 100, 75});
-    EndScissorMode();
-
     //Drawing mouse coords for debugging
     char coordStr[100];
     char freqStr[100];
@@ -210,12 +202,20 @@ int main(void)
     DrawText(coordStr, GetMouseX() + 10, GetMouseY() + 10, 10, BLACK);
     DrawText(freqStr, GetMouseX() + 30, GetMouseY() + 30, 10, RED);
 
+    //CURVES: start drawing the curve editor
+    BeginScissorMode(0, 600, screenWidth, 100);
+      GuiCurveEditor(&curves[0], (Rectangle){0, 600, 100, 75});
+    EndScissorMode();
+
     //ENVELOPE
     Rectangle envelopeRect = (Rectangle){400,600,250,100};
     EnvelopeGraphEditor(envelopeRect, &curve);
 
     float curveEval = EnvelopeCurveEval(&curve, &time, animationTime);
-    pUserDataArr[0].frequency = currSliderOne + curveEval;
+    pUserDataArr[0].frequency = currSliderOne + curveEval * 100;
+    char freqText[10];
+    snprintf(freqText, sizeof(freqText), "freq: %f", pUserDataArr[0].frequency);
+    DrawText(freqText, 200, 300, 20, BLACK);
 
     //Draw fill up bar
     DrawRectangle(envelopeRect.x + envelopeRect.width, envelopeRect.y, 100, curveEval*100, BLUE);
