@@ -83,39 +83,31 @@ static int CompareEnvEditorPointPtr(const void *a, const void *b){
 int collision_cooldown = 20;
 int currIdx = 0;
 
-float EnvelopeCurveEval(EnvEditorState *state, float *time, float cycleTime){
-  float t = *time/cycleTime;
-  //DEBUGGING:
-  float timePos = state->bounds.x + (state->bounds.width * t);
-  char timeStr[15];
-  char timePosStr[15];
-  snprintf(timeStr, sizeof(timeStr),"time:%f", *time);
-  snprintf(timePosStr, sizeof(timePosStr), "timePos:%f", timePos);
-  DrawText(timeStr, 200, 200, 20, GREEN);
-  DrawText(timePosStr, 200, 300, 20, GREEN);
-  //Evaluating a curve should give you a number between 0 and 1. From there, the user can adjust the scale.
-  //So, calculate the y over the x to get the derivative.
-  //TEMPORARY
-  //Sort
+float EnvelopeCurveEval(EnvEditorState *state, float *time, float animationTime){
+  //SORT
   EnvEditorPoint* sorted[ENV_EDITOR_MAX_POINTS];
 
   for(int i = 0; i < state->numPoints; i++) sorted[i] = &state->points[i];
 
   qsort(sorted, state->numPoints, sizeof(EnvEditorPoint*), CompareEnvEditorPointPtr);
 
-  //Edges
-  // if (t <= sorted[0]->position.x) return state->start + (state->end-state->start)*sorted[0]->position.y;
-  // if (t >= sorted[state->numPoints-1]->position.x) return state->start + (state->end-state->start)*sorted[state->numPoints-1]->position.y;  return state->start;
-
-  //Find portion
+  //This honestly should be in the state
   const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
   const Rectangle innerBounds = (Rectangle){ state->bounds.x + fontSize, state->bounds.y + fontSize, state->bounds.width - 2*fontSize, state->bounds.height - 2*fontSize};
 
-  DrawLine(timePos + (innerBounds.x - state->bounds.x), state->bounds.y, timePos + (innerBounds.x - state->bounds.x), state->bounds.y + state->bounds.height, BLUE);
-
+  //points
   const EnvEditorPoint *p1 = sorted[currIdx];
   const EnvEditorPoint *p2 = sorted[currIdx + 1];
-  
+  const EnvEditorPoint *last = sorted[state->numPoints-1];
+
+  //cycle time is the amount of time it takes to get from one point to the next
+  //all cycle times added up == animationTime
+  float cycleTime = ((p2->position.x - p1->position.x)/last->position.x) * animationTime;
+  float t = *time/cycleTime;
+  float timePos = state->bounds.x + (state->bounds.width * t);
+  DrawLine(timePos + (innerBounds.x - state->bounds.x), state->bounds.y, timePos + (innerBounds.x - state->bounds.x), state->bounds.y + state->bounds.height, BLUE);
+
+  //where the points are positioned on the screen  
   const Vector2 screenPos1 = (Vector2){ p1->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y * innerBounds.height};
   const Vector2 screenPos2 = (Vector2){ p2->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y * innerBounds.height}; 
 
@@ -129,9 +121,12 @@ float EnvelopeCurveEval(EnvEditorState *state, float *time, float cycleTime){
     pixelX = (1-t)*(1-t)*screenPos1.x+2*(1-t)*t*screenC1.x+t*t*screenPos2.x;
     pixelY = (1-t)*(1-t)*screenPos1.y+2*(1-t)*t*screenC1.y+t*t*screenPos2.y;
 
-  }
+  }//todo: add c2 and linear
+
+  //DEBUGGING: circle tracing the bezier curve
   DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
 
+  //DEBUGGING: line tracing the bounds
   Vector2 line1 = (Vector2){ screenPos2.x, state->bounds.y};
   Vector2 line2 = (Vector2){ screenPos2.x, state->bounds.y + state->bounds.height };
   DrawLineV(line1, line2, PURPLE);
@@ -141,6 +136,7 @@ float EnvelopeCurveEval(EnvEditorState *state, float *time, float cycleTime){
     if(currIdx >= state->numPoints - 1) currIdx = 0;
     *time = 0;
   }
+  //if all else fails
   return state->start;
 }
 
