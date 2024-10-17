@@ -107,14 +107,25 @@ float EnvelopeCurveEval(EnvEditorState *state, float *time, float animationTime)
   float timePos = state->bounds.x + (state->bounds.width * t);
   DrawLine(timePos + (innerBounds.x - state->bounds.x), state->bounds.y, timePos + (innerBounds.x - state->bounds.x), state->bounds.y + state->bounds.height, BLUE);
 
+  //MANAGE TIME
+  if(*time > cycleTime){
+    currIdx++;
+    if(currIdx >= state->numPoints - 1) currIdx = 0;
+    *time = 0;
+  }
   //where the points are positioned on the screen  
   const Vector2 screenPos1 = (Vector2){ p1->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y * innerBounds.height};
   const Vector2 screenPos2 = (Vector2){ p2->position.x * innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y * innerBounds.height}; 
+
+  float lowScreenPosY = innerBounds.y + innerBounds.height - sorted[0]->position.y * innerBounds.height;
+  float highScreenPosY = innerBounds.y + innerBounds.height - sorted[1]->position.y * innerBounds.height;
+
 
   float pixelX;
   float pixelY;
 
   //FEATURE: evaluate curve based on the bezier position
+  //TODO: return value based on the bezier position
   if(curve_cycle[p1->curve_state_index] == C1){
     
     const Vector2 screenC1 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmin(screenPos1.y, screenPos2.y)};
@@ -122,30 +133,38 @@ float EnvelopeCurveEval(EnvEditorState *state, float *time, float animationTime)
     pixelX = (1-t)*(1-t)*screenPos1.x+2*(1-t)*t*screenC1.x+t*t*screenPos2.x;
     pixelY = (1-t)*(1-t)*screenPos1.y+2*(1-t)*t*screenC1.y+t*t*screenPos2.y;
 
+    //DEBUGGING: circle tracing the bezier curve
+    DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
+
+    //formula to get a number between 0 and 1 that represents the evaluation
+    return fabs(pixelY - lowScreenPosY) / (lowScreenPosY - highScreenPosY - 1);
   }
   else if(curve_cycle[p1->curve_state_index] == C2){
     const Vector2 screenC2 = (Vector2){screenPos1.x + ((screenPos2.x - screenPos1.x)/2.0f), fmax(screenPos1.y, screenPos2.y)};
 
     pixelX = (1-t)*(1-t)*screenPos1.x+2*(1-t)*t*screenC2.x+t*t*screenPos2.x;
     pixelY = (1-t)*(1-t)*screenPos1.y+2*(1-t)*t*screenC2.y+t*t*screenPos2.y;
+
+    //DEBUGGING: circle tracing the bezier curve
+    DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
+
+    return fabs(pixelY - lowScreenPosY) / (lowScreenPosY - highScreenPosY - 1);
+
   }else{
     pixelX = (1-t)*screenPos1.x+(t * screenPos2.x);
     pixelY = (1-t)*screenPos1.y+(t * screenPos2.y);
+
+    //DEBUGGING: circle tracing the bezier curve
+    DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
+
+    return fabs(pixelY - lowScreenPosY) / (lowScreenPosY - highScreenPosY - 1);
   }
 
-  //DEBUGGING: circle tracing the bezier curve
-  DrawCircle(pixelX, pixelY, 2.0f, PURPLE);
 
   //DEBUGGING: line tracing the bounds
   Vector2 line1 = (Vector2){ screenPos2.x, state->bounds.y};
   Vector2 line2 = (Vector2){ screenPos2.x, state->bounds.y + state->bounds.height };
   DrawLineV(line1, line2, PURPLE);
-  //MANAGE TIME
-  if(*time > cycleTime){
-    currIdx++;
-    if(currIdx >= state->numPoints - 1) currIdx = 0;
-    *time = 0;
-  }
   //if all else fails
   return state->start;
 }

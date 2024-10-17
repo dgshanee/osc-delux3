@@ -218,7 +218,12 @@ int main(void)
     pUserDataArr[0].frequency = currSliderOne + curveEval;
 
     //Draw fill up bar
-    DrawRectangle(envelopeRect.x + envelopeRect.width, envelopeRect.y, 100, fabs(curveEval)/10, BLUE);
+    DrawRectangle(envelopeRect.x + envelopeRect.width, envelopeRect.y, 100, curveEval*100, BLUE);
+
+    //Draw eval text
+    char evalText[10];
+    snprintf(evalText, sizeof(evalText), "eval: %f", curveEval);
+    DrawText(evalText, 200, 200, 20, GREEN);
     
     EndDrawing();
   }
