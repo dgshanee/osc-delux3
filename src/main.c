@@ -27,6 +27,8 @@
 #define DEVICE_CHANNELS 2
 #define DEVICE_SAMPLE_RATE 48000
 
+#include "../include/midi-controller.c"
+
 int main(void)
 {
   //GUI properties
@@ -109,6 +111,8 @@ int main(void)
   float time = 0.0f;
   float animationTime = 5.0f;
   //Start main game loop
+
+  listAndConnectMIDIDevices();
   while(!WindowShouldClose()){
     int keyCode = GetKeyPressed();
     if(keyCode != 0){

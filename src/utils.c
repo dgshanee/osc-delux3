@@ -25,6 +25,11 @@ void initializePUserData(WaveData *pUserData){
   pUserData->amplitude = amplitude;
 }
 
+typedef struct{
+  WaveData notes[8];
+  bool isOn;
+}Oscillator;
+
 
 
 void LoadCurveDefaults(GuiCurveEditorState curves[])
