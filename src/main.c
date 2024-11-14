@@ -58,7 +58,7 @@ int main(void)
 
    for(int i = 0; i < 3; i++){
      pUserDataArr[i].sineWave = &pWaveforms[i]; //TODO: rename sineWave WaveData
-     initializePUserData(&pUserDataArr[i]);
+     initializeWaveData(&pUserDataArr[i]);
      initializeDevice(&pDevices[i], &pUserDataArr[i]);
    }
 
@@ -67,6 +67,15 @@ int main(void)
    for(int i = 0; i < 3; i++){
      makeWaveForm(&pDevices[i], ma_waveform_type_sine, &pWaveforms[i]);
    }
+
+  //POLYPHONY HERE:
+  Oscillator **pOscillators = malloc(3 * sizeof(Oscillator));
+  for(int i = 0; i < 3; i++){
+    pOscillators[i] = createOscillator();
+  }
+  printf("POLYPHONY INITIALIZED\n");
+
+  //be sure to free pOscillators and everything inside
 
   //Userdata holds the data of the waves so that they can be changed in the callback
   //TODO: update variable names to be more general
@@ -110,9 +119,11 @@ int main(void)
   //GUI Curve editor: time
   float time = 0.0f;
   float animationTime = 5.0f;
+
+  //Listen for MIDI:
+  listAndConnectMIDIDevices();
   //Start main game loop
 
-  listAndConnectMIDIDevices();
   while(!WindowShouldClose()){
     int keyCode = GetKeyPressed();
     if(keyCode != 0){

@@ -16,21 +16,12 @@ typedef struct{
   ma_device_config* deviceConfig;  
 } DeviceUtil;
 
-void initializePUserData(WaveData *pUserData){
-  float buffer;
-  float frequency = 220;
-  float amplitude = 0.2f;
-  pUserData->buffer = &buffer;
-  pUserData->frequency = frequency;
-  pUserData->amplitude = amplitude;
-}
 
 typedef struct{
-  WaveData notes[8];
+  WaveData **notes;
+  DeviceUtil **devices;
   bool isOn;
 }Oscillator;
-
-
 
 void LoadCurveDefaults(GuiCurveEditorState curves[])
 {

@@ -98,4 +98,95 @@ void initializeDevice(ma_device *device, WaveData *userData){
   }
 }
 
+void initializeDeviceUtil(ma_device *device, DeviceUtil *device_util, WaveData *userData){
+  ma_device_config deviceConfig;
+  ma_device_config *pDeviceConfig = malloc(sizeof(ma_device_config));
+  pDeviceConfig = &deviceConfig;
+
+  deviceConfig = ma_device_config_init(ma_device_type_playback);
+  deviceConfig.playback.format = DEVICE_FORMAT;
+  deviceConfig.playback.channels = DEVICE_CHANNELS;
+  deviceConfig.sampleRate = DEVICE_SAMPLE_RATE;
+  deviceConfig.dataCallback = data_callback;
+  deviceConfig.pUserData = userData;
+
+  if(ma_device_init(NULL, &deviceConfig, device) != MA_SUCCESS){
+    printf("Error initializing device.\n");
+    return;
+  }
+
+  device_util->device = device;
+  device_util->deviceConfig = &deviceConfig;
+}
+
+
+void initializeWaveData(WaveData *pUserData){
+  float buffer;
+  float frequency = 220;
+  float amplitude = 0.2f;
+  pUserData->buffer = &buffer;
+  pUserData->frequency = frequency;
+  pUserData->amplitude = amplitude;
+}
+
+Oscillator *createOscillator(){
+  Oscillator *osc = malloc(sizeof(Oscillator));
+
+  //initialize WaveData
+  WaveData **notes = malloc(8 * sizeof(WaveData));
+  for(int i = 0; i < 8; i++){
+    notes[i] = malloc(sizeof(WaveData));
+  }
+  //initialize DeviceUtil
+  DeviceUtil **deviceUtils = malloc(8 * sizeof(DeviceUtil));
+  for(int i = 0; i < 8; i++){
+    deviceUtils[i] = malloc(sizeof(DeviceUtil));
+    ma_device_config *pDeviceConfig = malloc(sizeof(ma_device_config));
+    ma_device *device = malloc(sizeof(ma_device));
+
+    *pDeviceConfig = ma_device_config_init(ma_device_type_playback);
+    pDeviceConfig->playback.format = DEVICE_FORMAT;
+    pDeviceConfig->playback.channels = DEVICE_CHANNELS;
+    pDeviceConfig->sampleRate = DEVICE_SAMPLE_RATE;
+    pDeviceConfig->dataCallback = data_callback;
+    pDeviceConfig->pUserData = notes[i];
+
+    deviceUtils[i]->device = device;
+    deviceUtils[i]->deviceConfig = pDeviceConfig;
+
+    if(ma_device_init(NULL, pDeviceConfig, device) != MA_SUCCESS){
+      printf("Error initializing device\n");
+    }
+  }
+
+  for(int i = 0; i < 8; i++){
+    ma_device *currDevice = deviceUtils[i]->device;
+    ma_waveform *waveData = malloc(sizeof(ma_waveform));
+    ma_waveform_config *pWaveConfig = malloc(sizeof(ma_waveform_config));
+    *pWaveConfig = ma_waveform_config_init(currDevice->playback.format, currDevice->playback.channels, currDevice->sampleRate, ma_waveform_type_sine, 0.2, 220);
+    if(ma_waveform_init(pWaveConfig, waveData) != MA_SUCCESS){
+      printf("Error initializing waveform");
+    };
+    notes[i]->sineWave = malloc(sizeof(ma_waveform));
+    notes[i]->frequency = 220;
+    notes[i]->amplitude = 0.2f;
+    notes[i]->sineWave = waveData;
+  }
+
+  printf("%f", notes[0]->sineWave->config.amplitude);
+
+  for(int i = 0; i < 8; i++){
+    ma_device *device = deviceUtils[i]->device;
+    if(ma_device_start(device) != MA_SUCCESS){
+      printf("Error startinf device\n");
+    }
+  }
+
+  osc->notes = notes;
+  osc->devices = deviceUtils;
+  
+  osc->isOn = false;
+
+  return osc;
+}
 
