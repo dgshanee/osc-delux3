@@ -23,6 +23,10 @@ typedef struct{
   bool isOn;
 }Oscillator;
 
+void freeOscillator(Oscillator *pOsc){
+  free(pOsc);
+}
+
 void LoadCurveDefaults(GuiCurveEditorState curves[])
 {
     // X pos

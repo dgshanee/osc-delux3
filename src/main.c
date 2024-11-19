@@ -242,8 +242,13 @@ int main(void)
     
     EndDrawing();
   }
-  //Uninit everything
+  //Uninit everything and free
   CloseWindow();
+
+  for(int i = 0; i < 3; i++){
+    free(pOscillators[i]);
+  }
+
 
   ma_device_uninit(&device);
 

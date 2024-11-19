@@ -2,6 +2,6 @@ build:
 	./main.sh
 
 open: build
-	./main-recreate
+	./osc-delux3
 
 e: open
