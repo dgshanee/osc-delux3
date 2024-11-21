@@ -1,31 +1,4 @@
-
-#define MINIAUDIO_IMPLEMENTATION
-#import "../include/miniaudio.h"
-
-#include "../include/gui_curve_editor.h"
-
-typedef struct{
-  ma_waveform* sineWave;
-  float* buffer;
-  float frequency;
-  float amplitude;
-} WaveData;
-
-typedef struct{
-  ma_device* device;
-  ma_device_config* deviceConfig;  
-} DeviceUtil;
-
-
-typedef struct{
-  WaveData **notes;
-  DeviceUtil **devices;
-  bool isOn;
-}Oscillator;
-
-void freeOscillator(Oscillator *pOsc){
-  free(pOsc);
-}
+#include "utils.h"
 
 void LoadCurveDefaults(GuiCurveEditorState curves[])
 {

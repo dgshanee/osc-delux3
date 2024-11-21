@@ -1,26 +1,24 @@
 #include <stdio.h>
 #define MINIAUDIO_IMPLEMENTATION
-#import "../include/miniaudio.h"
-#import "sounds.c"
-#import "utils.c"
+#include "../include/miniaudio.h"
+#include "sounds.c"
+#include "utils.c"
 
 #import "../include/raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#import "../include/raygui.h"
+// #include "../include/raygui.h"
+#include "Oscillator.h"
 
 // #define GUI_CURVE_EDITOR_IMPLEMENTATION
 // #include "../include/gui_curve_editor.h"
 
-#ifndef GUI_CURVE_EDITOR_IMPLEMENTATION
-#define GUI_CURVE_EDITOR_IMPLEMENTATION
-#include "../include/gui_curve_editor.h"
-#endif
+// #ifndef GUI_CURVE_EDITOR_IMPLEMENTATION
+// #define GUI_CURVE_EDITOR_IMPLEMENTATION
+// #include "../include/gui_curve_editor.h"
+// #endif
 
-#ifndef ENVELOPE_GRAPH_EDITOR_IMPLEMENTATION
-#define ENVELOPE_GRAPH_EDITOR_IMPLEMENTATION
-#include "../include/envelope_graph_editor.c"
-#endif
+#include "../include/envelope_graph_editor.h"
 
 
 #define DEVICE_FORMAT ma_format_f32
@@ -50,9 +48,9 @@ int main(void)
   ma_waveform_config sineConfig;
 
   //Initialize the arrays for the three waveforms
-  ma_waveform *pWaveforms = malloc(3 * sizeof(ma_waveform));
-  WaveData *pUserDataArr = malloc(3 * sizeof(WaveData));
-  ma_device *pDevices = malloc(3 * sizeof(ma_device));
+  ma_waveform *pWaveforms = (ma_waveform*) malloc(3 * sizeof(ma_waveform));
+  WaveData *pUserDataArr = (WaveData*) malloc(3 * sizeof(WaveData));
+  ma_device *pDevices = (ma_device*) malloc(3 * sizeof(ma_device));
   bool devicesPlaying[3] = { false };
   bool devicesToggled[3] = { false };
 
@@ -69,7 +67,7 @@ int main(void)
    }
 
   //POLYPHONY HERE:
-  Oscillator **pOscillators = malloc(3 * sizeof(Oscillator));
+  Oscillator *pOscillators[3];
   for(int i = 0; i < 3; i++){
     pOscillators[i] = createOscillator();
   }
@@ -110,8 +108,8 @@ int main(void)
   char keyCodeStr[20];
 
   //Curves
-  GuiCurveEditorState curves[3] = { 0 };
-  LoadCurveDefaults(curves);
+  // GuiCurveEditorState curves[3] = { 0 };
+  // LoadCurveDefaults(curves);
 
   EnvEditorState curve = InitEnvelopeEditor();
   SetEnvelopePoints(&curve);
@@ -218,9 +216,9 @@ int main(void)
     DrawText(freqStr, GetMouseX() + 30, GetMouseY() + 30, 10, RED);
 
     //CURVES: start drawing the curve editor
-    BeginScissorMode(0, 600, screenWidth, 100);
-      GuiCurveEditor(&curves[0], (Rectangle){0, 600, 100, 75});
-    EndScissorMode();
+    // BeginScissorMode(0, 600, screenWidth, 100);
+    //   GuiCurveEditor(&curves[0], (Rectangle){0, 600, 100, 75});
+    // EndScissorMode();
 
     //ENVELOPE
     Rectangle envelopeRect = (Rectangle){400,600,250,100};
