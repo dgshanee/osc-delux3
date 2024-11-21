@@ -3,7 +3,7 @@
 
 #include "../include/miniaudio.h"
 
-#include "../include/gui_curve_editor.h"
+// #include "../include/gui_curve_editor.h"
 
 typedef struct{
   ma_waveform* sineWave;
@@ -22,7 +22,7 @@ typedef struct{
   DeviceUtil device;
 }Note;
 
-void LoadCurveDefaults(GuiCurveEditorState[]);
+// void LoadCurveDefaults(GuiCurveEditorState[]);
 
 #endif
 

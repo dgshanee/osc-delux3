@@ -1,12 +1,4 @@
-#include <stdio.h>
-#import "utils.c"
-#define MINIAUDIO_IMPLEMENTATION
-#import "../include/miniaudio.h"
-
-#define DEVICE_FORMAT ma_format_f32
-#define DEVICE_CHANNELS 2
-#define DEVICE_SAMPLE_RATE 48000
-
+#include "sounds.h"
 
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount){
   WaveData* pSineData;
@@ -100,7 +92,7 @@ void initializeDevice(ma_device *device, WaveData *userData){
 
 void initializeDeviceUtil(ma_device *device, DeviceUtil *device_util, WaveData *userData){
   ma_device_config deviceConfig;
-  ma_device_config *pDeviceConfig = malloc(sizeof(ma_device_config));
+  ma_device_config *pDeviceConfig = (ma_device_config*) malloc(sizeof(ma_device_config));
   pDeviceConfig = &deviceConfig;
 
   deviceConfig = ma_device_config_init(ma_device_type_playback);
