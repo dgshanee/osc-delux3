@@ -1,14 +1,16 @@
 #include <stdio.h>
 #define MINIAUDIO_IMPLEMENTATION
 #include "../include/miniaudio.h"
-#include "sounds.c"
-#include "utils.c"
+
+#include "utils/WaveData.h"
+#include "utils/sounds.c"
+#include "utils/utils.c"
 
 #import "../include/raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
 // #include "../include/raygui.h"
-#include "Oscillator.h"
+#include "utils/Oscillator.h"
 
 // #define GUI_CURVE_EDITOR_IMPLEMENTATION
 // #include "../include/gui_curve_editor.h"
@@ -30,7 +32,6 @@
 int main(void)
 {
   //GUI properties
-  SayHelloEditor();
 
   const int screenHeight = 540;
   const int screenWidth = 800;
@@ -244,7 +245,7 @@ int main(void)
   CloseWindow();
 
   for(int i = 0; i < 3; i++){
-    free(pOscillators[i]);
+    destroyOscillator(pOscillators[i]);
   }
 
 

@@ -2,7 +2,8 @@
 #define SOUNDS_H
 
 #include "utils.h"
-#include "../include/miniaudio.h"
+#include "WaveData.h"
+#include "../../include/miniaudio.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -12,7 +13,7 @@
 
 void data_callback(ma_device*, void*, const void*, ma_uint32);
 
-DeviceUtil *generateDevice();
+// DeviceUtil *generateDevice();
 
 ma_device *generateDevices();
 
@@ -20,7 +21,7 @@ void makeWaveForm(ma_device *device, ma_waveform_type waveformType, ma_waveform 
 
 void initializeDevice(ma_device *device, WaveData *userData);
 
-void initializeDeviceUtil(ma_device *device, DeviceUtil *device_util, WaveData *userData);
+// void initializeDeviceUtil(ma_device *device, DeviceUtil *device_util, WaveData *userData);
 
 void initializeWaveData(WaveData *pUserData);
 

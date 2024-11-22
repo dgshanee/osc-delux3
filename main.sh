@@ -1,1 +1,1 @@
-clang -framework CoreMIDI -framework CoreFoundation -framework Security -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL lib/libraylib.a src/main.c src/Oscillator.c include/envelope_graph_editor.c -o osc-delux3
+clang -framework CoreMIDI -framework CoreFoundation -framework Security -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL lib/libraylib.a src/main.c src/utils/Oscillator.c src/utils/WaveData.c src/utils/DeviceUtil.c include/envelope_graph_editor.c -o osc-delux3

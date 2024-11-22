@@ -10,14 +10,14 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
   MA_ASSERT(pSineWave != NULL);
 
   ma_waveform_set_frequency(pSineWave, pSineData->frequency);
+
   ma_waveform_set_amplitude(pSineWave,pSineData->amplitude);
 
   ma_waveform_read_pcm_frames(pSineWave,pOutput,frameCount,NULL);
 
   pSineData->buffer = (float*)pOutput;
 
-  (void)pInput;
-  
+  (void)pInput;  
 }
 
 
@@ -29,35 +29,35 @@ void test_callback_1(ma_device* pDevice, void* pOutput, const void* pInput, ma_u
 void test_callback_2(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount){
   printf("!olleh");
 }
-DeviceUtil *generateDevice(){
-  DeviceUtil *devUtil = (DeviceUtil *)malloc(sizeof(DeviceUtil));
-  ma_device *device = (ma_device *)malloc(3 * sizeof(ma_device));
-  ma_device_config deviceConfig;
+// DeviceUtil *generateDevice(){
+//   DeviceUtil *devUtil = (DeviceUtil *)malloc(sizeof(DeviceUtil));
+//   ma_device *device = (ma_device *)malloc(3 * sizeof(ma_device));
+//   ma_device_config deviceConfig;
 
-  WaveData *wav;
-  ma_waveform sine;
-  ma_waveform_config sineConfig;
+//   WaveData *wav;
+//   ma_waveform sine;
+//   ma_waveform_config sineConfig;
 
   
 
-  devUtil->device = device;
-  devUtil->deviceConfig = &deviceConfig;
+//   devUtil->device = device;
+//   devUtil->deviceConfig = &deviceConfig;
 
-  deviceConfig = ma_device_config_init(ma_device_type_playback);
-  deviceConfig.playback.format = DEVICE_FORMAT;
-  deviceConfig.playback.channels = 2;
-  deviceConfig.sampleRate = DEVICE_SAMPLE_RATE;
-  deviceConfig.dataCallback = test_callback_1;
-  deviceConfig.pUserData = wav;
+//   deviceConfig = ma_device_config_init(ma_device_type_playback);
+//   deviceConfig.playback.format = DEVICE_FORMAT;
+//   deviceConfig.playback.channels = 2;
+//   deviceConfig.sampleRate = DEVICE_SAMPLE_RATE;
+//   deviceConfig.dataCallback = test_callback_1;
+//   deviceConfig.pUserData = wav;
 
-  if(ma_device_init(NULL,&deviceConfig,device) != MA_SUCCESS){
-    printf("failed to load device.");
-    return NULL;
-  }
+//   if(ma_device_init(NULL,&deviceConfig,device) != MA_SUCCESS){
+//     printf("failed to load device.");
+//     return NULL;
+//   }
 
-  return devUtil;
+//   return devUtil;
   
-}
+// }
 
 ma_device *generateDevices(){
   ma_device *deviceArr = (ma_device *)malloc(3 * sizeof(ma_device));
@@ -90,26 +90,26 @@ void initializeDevice(ma_device *device, WaveData *userData){
   }
 }
 
-void initializeDeviceUtil(ma_device *device, DeviceUtil *device_util, WaveData *userData){
-  ma_device_config deviceConfig;
-  ma_device_config *pDeviceConfig = (ma_device_config*) malloc(sizeof(ma_device_config));
-  pDeviceConfig = &deviceConfig;
+// void initializeDeviceUtil(ma_device *device, DeviceUtil *device_util, WaveData *userData){
+//   ma_device_config deviceConfig;
+//   ma_device_config *pDeviceConfig = (ma_device_config*) malloc(sizeof(ma_device_config));
+//   pDeviceConfig = &deviceConfig;
 
-  deviceConfig = ma_device_config_init(ma_device_type_playback);
-  deviceConfig.playback.format = DEVICE_FORMAT;
-  deviceConfig.playback.channels = DEVICE_CHANNELS;
-  deviceConfig.sampleRate = DEVICE_SAMPLE_RATE;
-  deviceConfig.dataCallback = data_callback;
-  deviceConfig.pUserData = userData;
+//   deviceConfig = ma_device_config_init(ma_device_type_playback);
+//   deviceConfig.playback.format = DEVICE_FORMAT;
+//   deviceConfig.playback.channels = DEVICE_CHANNELS;
+//   deviceConfig.sampleRate = DEVICE_SAMPLE_RATE;
+//   deviceConfig.dataCallback = data_callback;
+//   deviceConfig.pUserData = userData;
 
-  if(ma_device_init(NULL, &deviceConfig, device) != MA_SUCCESS){
-    printf("Error initializing device.\n");
-    return;
-  }
+//   if(ma_device_init(NULL, &deviceConfig, device) != MA_SUCCESS){
+//     printf("Error initializing device.\n");
+//     return;
+//   }
 
-  device_util->device = device;
-  device_util->deviceConfig = &deviceConfig;
-}
+//   device_util->device = device;
+//   device_util->deviceConfig = &deviceConfig;
+// }
 
 
 void initializeWaveData(WaveData *pUserData){
