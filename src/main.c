@@ -120,7 +120,7 @@ int main(void)
   float animationTime = 5.0f;
 
   //Listen for MIDI:
-  listAndConnectMIDIDevices();
+  listAndConnectMIDIDevices(pOscillators);
   //Start main game loop
 
   while(!WindowShouldClose()){

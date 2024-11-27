@@ -13,6 +13,7 @@ Oscillator *createOscillator(){
     res->notes[i]->device = devUtil;
   }
 
+  res->activeNotes = 0;
   res->isOn = false;
 
   return res;

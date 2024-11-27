@@ -11,7 +11,7 @@ WaveData *createWaveData(){
   }
 
   res->frequency = 220;
-  res->amplitude = 0.2f;
+  res->amplitude = 0.0f;
   res->sineWave = wave;
 
   return res;

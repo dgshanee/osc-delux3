@@ -1,7 +1,11 @@
 #include <CoreMIDI/CoreMIDI.h>
 #include <Security/Security.h>
+#include "../src/utils/Oscillator.h"
 
 //should be callable in a loop constantly calling listAndConnectMIDIDevices
+
+Oscillator **oscillators;
+bool linked = false;
 
 MIDIReceiveBlock receiveBlock = ^(const MIDIEventList *evtlist, void *srcConnRefCon) {
     const MIDIEventPacket *packet = &evtlist->packet[0];
@@ -29,12 +33,20 @@ MIDIReceiveBlock receiveBlock = ^(const MIDIEventList *evtlist, void *srcConnRef
 
                         double freq = 27.5 * pow(2, ((double)data1/12));
                         // double freq = 293.664;
+                        int activeNote = oscillators[0]->activeNotes;
+                        oscillators[0]->notes[activeNote]->wav->amplitude = 0.2f;
+                        oscillators[0]->notes[activeNote]->wav->frequency = freq;
+                        oscillators[0]->activeNotes++;
                     }
                     break;
                 case 0x80: // Note Off
                     printf("Note Off - Channel: %d, Note: %d, Velocity: %d\n", 
                            channel + 1, data1, data2);
 
+                    oscillators[0]->activeNotes--;
+                    int activeNote = oscillators[0]->activeNotes;
+                    oscillators[0]->notes[activeNote]->wav->amplitude = 0.0f;
+                    
                     break;
                 case 0xB0: // Control Change
                     printf("Control Change - Channel: %d, Controller: %d, Value: %d\n", 
@@ -79,7 +91,11 @@ char * CFStringCopyUTF8String(CFStringRef aString) {
     return NULL;
 }
 
-void listAndConnectMIDIDevices() {
+void listAndConnectMIDIDevices(Oscillator *pOscillators[3]) {
+    if(!linked){
+        oscillators = pOscillators;
+        linked = true;
+    }
     MIDIClientRef client;
     OSStatus result = MIDIClientCreate(CFSTR("MIDI Device Lister"), NULL, NULL, &client);
     if (result != noErr) {

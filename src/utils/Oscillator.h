@@ -17,6 +17,7 @@ typedef struct{
 
 typedef struct{
   Note *notes[8];
+  int activeNotes;
   bool isOn;
 }Oscillator;
 
