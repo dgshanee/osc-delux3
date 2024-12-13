@@ -230,7 +230,7 @@ int main(void)
     EnvelopeGraphEditor(envelopeRect, &curve);
 
     float curveEval = EnvelopeCurveEval(&curve, &time, animationTime);
-    pUserDataArr[0].frequency = currSliderOne + curveEval * 100;
+    pUserDataArr[0].frequency = currSliderOne + curveEval * 100; //THIS SETS THE DATA TO THE AMPLITUDE
     char freqText[10];
     snprintf(freqText, sizeof(freqText), "freq: %f", pUserDataArr[0].frequency);
     DrawText(freqText, 200, 300, 20, BLACK);
