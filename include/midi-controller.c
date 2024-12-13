@@ -9,11 +9,10 @@ Oscillator **oscillators;
 Hashmap *noteLocations;
 bool linked = false;
 
-void initializeSoundTrackers(Oscillator *pOscillators[3]){
+void initializeSoundTrackers(Oscillator *pOscillators[3], Hashmap *mp){
     oscillators = pOscillators;
 
-    noteLocations = (Hashmap*)malloc(sizeof(Hashmap*));
-    initHashmap(noteLocations);
+    noteLocations = mp;
 }
 
 
@@ -103,9 +102,9 @@ char * CFStringCopyUTF8String(CFStringRef aString) {
     return NULL;
 }
 
-void listAndConnectMIDIDevices(Oscillator *pOscillators[3]) {
+void listAndConnectMIDIDevices(Oscillator *pOscillators[3], Hashmap *mp) {
     if(!linked){
-        initializeSoundTrackers(pOscillators);
+        initializeSoundTrackers(pOscillators, mp);
         linked = true;
     }
     MIDIClientRef client;

@@ -11,6 +11,7 @@
 #define RAYGUI_IMPLEMENTATION
 // #include "../include/raygui.h"
 #include "utils/Oscillator.h"
+#include "utils/Hashmap.c"
 
 // #define GUI_CURVE_EDITOR_IMPLEMENTATION
 // #include "../include/gui_curve_editor.h"
@@ -72,6 +73,9 @@ int main(void)
   for(int i = 0; i < 3; i++){
     pOscillators[i] = createOscillator();
   }
+  //HASHMAP FOR POLYPHONY
+  Hashmap *noteLocationMap = (Hashmap*)malloc(sizeof(Hashmap*));
+  initHashmap(noteLocationMap);
   printf("POLYPHONY INITIALIZED\n");
 
   //be sure to free pOscillators and everything inside
@@ -120,7 +124,7 @@ int main(void)
   float animationTime = 5.0f;
 
   //Listen for MIDI:
-  listAndConnectMIDIDevices(pOscillators);
+  listAndConnectMIDIDevices(pOscillators, noteLocationMap);
   //Start main game loop
 
   while(!WindowShouldClose()){
@@ -244,9 +248,12 @@ int main(void)
   //Uninit everything and free
   CloseWindow();
 
+  //destroy initialized oscillator and hashmap
   for(int i = 0; i < 3; i++){
     destroyOscillator(pOscillators[i]);
   }
+
+  // destroyHashmap(noteLocationMap);
 
 
   ma_device_uninit(&device);
