@@ -1,11 +1,21 @@
 #include <CoreMIDI/CoreMIDI.h>
 #include <Security/Security.h>
 #include "../src/utils/Oscillator.h"
+#include "../src/utils/Hashmap.c"
 
 //should be callable in a loop constantly calling listAndConnectMIDIDevices
 
 Oscillator **oscillators;
+Hashmap *noteLocations;
 bool linked = false;
+
+void initializeSoundTrackers(Oscillator *pOscillators[3]){
+    oscillators = pOscillators;
+
+    noteLocations = (Hashmap*)malloc(sizeof(Hashmap*));
+    initHashmap(noteLocations);
+}
+
 
 MIDIReceiveBlock receiveBlock = ^(const MIDIEventList *evtlist, void *srcConnRefCon) {
     const MIDIEventPacket *packet = &evtlist->packet[0];
@@ -36,6 +46,7 @@ MIDIReceiveBlock receiveBlock = ^(const MIDIEventList *evtlist, void *srcConnRef
                         int activeNote = oscillators[0]->activeNotes;
                         oscillators[0]->notes[activeNote]->wav->amplitude = 0.2f;
                         oscillators[0]->notes[activeNote]->wav->frequency = freq;
+                        add(noteLocations, data1, activeNote);
                         oscillators[0]->activeNotes++;
                     }
                     break;
@@ -45,7 +56,8 @@ MIDIReceiveBlock receiveBlock = ^(const MIDIEventList *evtlist, void *srcConnRef
 
                     oscillators[0]->activeNotes--;
                     int activeNote = oscillators[0]->activeNotes;
-                    oscillators[0]->notes[activeNote]->wav->amplitude = 0.0f;
+                    // oscillators[0]->notes[activeNote]->wav->amplitude = 0.0f;
+                    oscillators[0]->notes[search(noteLocations, data1)]->wav->amplitude = 0.0f;
                     
                     break;
                 case 0xB0: // Control Change
@@ -93,7 +105,7 @@ char * CFStringCopyUTF8String(CFStringRef aString) {
 
 void listAndConnectMIDIDevices(Oscillator *pOscillators[3]) {
     if(!linked){
-        oscillators = pOscillators;
+        initializeSoundTrackers(pOscillators);
         linked = true;
     }
     MIDIClientRef client;
