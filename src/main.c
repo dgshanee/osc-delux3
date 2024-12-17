@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include "gui_utils.h"
 #define MINIAUDIO_IMPLEMENTATION
 
 #import "../include/miniaudio.h"
@@ -42,6 +43,11 @@ int main(void)
   bool hasBegun = false;
   int marginX = 25;
   int marginY = 75;
+    //3D
+  Camera camera = {0};
+  InitCamera(&camera);
+
+
 
   //Initialize beginning wave
   WaveData userData;
