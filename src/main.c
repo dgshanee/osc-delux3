@@ -1,5 +1,6 @@
 #include "stdio.h"
 #define MINIAUDIO_IMPLEMENTATION
+
 #import "../include/miniaudio.h"
 #import "sounds.c"
 #import "utils.c"
@@ -30,8 +31,9 @@
 int main(void)
 {
   //GUI properties
-  SayHelloEditor();
 
+  //FRONTEND VALUES
+  Color background = {251, 241, 199, 255};
   const int screenHeight = 540;
   const int screenWidth = 800;
   bool devicePlaying = false;
@@ -98,10 +100,6 @@ int main(void)
   SetTargetFPS(60);
   char keyCodeStr[20];
 
-  //Curves
-  GuiCurveEditorState curves[3] = { 0 };
-  LoadCurveDefaults(curves);
-
   EnvEditorState curve = InitEnvelopeEditor();
   SetEnvelopePoints(&curve);
 
@@ -142,7 +140,7 @@ int main(void)
       char timeStr[100];
       sprintf(timeStr, "Value: %f", EnvelopeCurveEval(&curve, &time, animationTime));
       DrawText(timeStr, GetMouseX() + 20, GetMouseY() + 20, 10, GREEN);
-      ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+      ClearBackground(background);
       DrawText(keyCodeStr, 20, 20, 10, RED);
        //Draws the sine waves :3
       for(int iData = 0; iData < 3; iData++){
@@ -201,11 +199,6 @@ int main(void)
     sprintf(freqStr, "freq: %f", pUserDataArr[0].frequency);
     DrawText(coordStr, GetMouseX() + 10, GetMouseY() + 10, 10, BLACK);
     DrawText(freqStr, GetMouseX() + 30, GetMouseY() + 30, 10, RED);
-
-    //CURVES: start drawing the curve editor
-    BeginScissorMode(0, 600, screenWidth, 100);
-      GuiCurveEditor(&curves[0], (Rectangle){0, 600, 100, 75});
-    EndScissorMode();
 
     //ENVELOPE
     Rectangle envelopeRect = (Rectangle){400,600,250,100};
