@@ -6,7 +6,7 @@
 #include "utils/sounds.c"
 #include "utils/utils.c"
 
-#import "../include/raylib.h"
+#include "../include/raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
 // #include "../include/raygui.h"
