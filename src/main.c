@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "stdio.h"
 #define MINIAUDIO_IMPLEMENTATION
 #import "../include/miniaudio.h"
 #import "sounds.c"
@@ -48,9 +48,9 @@ int main(void)
   ma_waveform_config sineConfig;
 
   //Initialize the arrays for the three waveforms
-  ma_waveform *pWaveforms = malloc(3 * sizeof(ma_waveform));
-  WaveData *pUserDataArr = malloc(3 * sizeof(WaveData));
-  ma_device *pDevices = malloc(3 * sizeof(ma_device));
+  ma_waveform *pWaveforms = (ma_waveform*)malloc(3 * sizeof(ma_waveform));
+  WaveData *pUserDataArr = (WaveData*)malloc(3 * sizeof(WaveData));
+  ma_device *pDevices = (ma_device*)malloc(3 * sizeof(ma_device));
   bool devicesPlaying[3] = { false };
   bool devicesToggled[3] = { false };
 
