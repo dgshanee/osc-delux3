@@ -112,8 +112,11 @@ int main(void)
   //GUI Curve editor: time
   float time = 0.0f;
   float animationTime = 5.0f;
-  //Start main game loop
+
+  //MAIN GAME LOOP
+
   while(!WindowShouldClose()){
+    DrawMovingSkull(84, 681, 50, 50);
     int keyCode = GetKeyPressed();
     if(keyCode != 0){
       snprintf(keyCodeStr, sizeof(keyCodeStr), "key down: %d", keyCode);
