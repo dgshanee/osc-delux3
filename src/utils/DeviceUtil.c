@@ -26,10 +26,20 @@ DeviceUtil *createDeviceUtil(WaveData *wav){
   res->device = device;
   res->deviceConfig = deviceConfig;
 
+  printf("%p\n", res->device->playback.pIntermediaryBuffer);
+
   return res;
 }
 
 void destroyDeviceUtil(DeviceUtil *devUtil){
+
+  // devUtil->deviceConfig->dataCallback = NULL;
+  // if(ma_device_init(NULL, devUtil->deviceConfig, devUtil->device) != MA_SUCCESS){
+  //   printf("Could not free device util.\n");
+  //   return;
+  // }
+  devUtil->device->playback.pIntermediaryBuffer = NULL;
+  
   ma_device_uninit(devUtil->device);
   free(devUtil->device);
   devUtil->device = NULL;
