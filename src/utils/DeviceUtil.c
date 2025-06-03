@@ -33,11 +33,6 @@ DeviceUtil *createDeviceUtil(WaveData *wav){
 
 void destroyDeviceUtil(DeviceUtil *devUtil){
 
-  // devUtil->deviceConfig->dataCallback = NULL;
-  // if(ma_device_init(NULL, devUtil->deviceConfig, devUtil->device) != MA_SUCCESS){
-  //   printf("Could not free device util.\n");
-  //   return;
-  // }
   devUtil->device->playback.pIntermediaryBuffer = NULL;
   
   ma_device_uninit(devUtil->device);
